@@ -15,7 +15,14 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
   }
 
   execute(query: FindCompaniesQuery): Promise<ReadonlyArray<CompanyView>> {
-    return this.entityManager.createQueryBuilder(CompanyView, 'companyView')
-      .getMany();
+    const select = this.entityManager.createQueryBuilder(CompanyView, 'companyView');
+
+    if (query.filter?.exchangeSymbols) {
+      select.where('companyView.exchangeSymbol IN (:...exchangeSymbols)', {
+        exchangeSymbols: query.filter.exchangeSymbols,
+      })
+    }
+
+    return select.getMany();
   }
 }

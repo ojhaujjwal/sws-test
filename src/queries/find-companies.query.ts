@@ -9,19 +9,19 @@ enum OverAllScoreFilterOperator {
 }
 
 type Filter =  {
-  readonly exchangeSymbols: ReadonlyArray<string>,
-  readonly overallScore: [OverAllScoreFilterOperator, number],
+  readonly exchangeSymbols?: ReadonlyArray<string>,
+  readonly overallScore?: [OverAllScoreFilterOperator, number],
 }
 
-enum Sort {
+export enum Sort {
   OVERALL_SCORE = 'overallScore',
   priceFluctuations = 'priceFluctuations',
 }
 
 export class FindCompaniesQuery {
     constructor(
-      readonly additionalData?: AdditionalData,
       readonly filter?: Filter,
       readonly sort?: Sort,
+      readonly additionalData?: AdditionalData,
     ) {}
 }

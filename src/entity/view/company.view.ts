@@ -7,6 +7,7 @@ import { Exclude, Expose } from 'class-transformer';
         c.id,
         c.name,
         c.unique_symbol,
+        c.exchange_symbol,
         cs.value as value_score,
         cs.past as past_score,
         cs.future as future_score,
@@ -27,6 +28,9 @@ export class CompanyView {
 
   @ViewColumn()
   readonly name: string;
+
+  @ViewColumn({ name: 'exchange_symbol' })
+  readonly exchangeSymbol;
 
   @ViewColumn({ name: 'unique_symbol' })
   readonly uniqueSymbol;

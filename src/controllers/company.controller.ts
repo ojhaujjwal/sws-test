@@ -1,7 +1,15 @@
 import { QueryBus } from '@nestjs/cqrs';
-import { FindCompaniesQuery } from '../queries/find-companies.query';
+import { FindCompaniesQuery, Sort as CompanySort } from '../queries/find-companies.query';
 import { CompanyView } from '../entity/view/company.view';
-import { ClassSerializerInterceptor, Controller, Get, UseInterceptors } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Query,
+  UseInterceptors,
+  ValidationPipe,
+} from '@nestjs/common';
+import { QueryCompaniesRequest } from '../requests/query-companies.request';
 
 @Controller('/api/v1/companies')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -12,10 +20,13 @@ export class CompanyController {
   }
 
   @Get()
-  public async findPaginated()
-  {
-    const companies: ReadonlyArray<CompanyView> = await this.queryBus.execute(new FindCompaniesQuery());
-
-    return companies;
+  public async findPaginated(
+    @Query(new ValidationPipe({ transform: true })) query: QueryCompaniesRequest,
+  ): Promise<ReadonlyArray<CompanyView>> {
+    return this.queryBus.execute(new FindCompaniesQuery(
+      {
+        exchangeSymbols: query.exchangeSymbols,
+      },
+    ));
   }
 }
