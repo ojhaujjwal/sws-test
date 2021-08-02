@@ -1,4 +1,5 @@
 import { ViewColumn, ViewEntity } from 'typeorm';
+import { Exclude, Expose } from 'class-transformer';
 
 @ViewEntity({
   expression: `
@@ -33,18 +34,34 @@ export class CompanyView {
   @ViewColumn({ name: 'last_closing_price' })
   readonly lastClosingPrice: number;
 
+  @Exclude()
   @ViewColumn({ name: 'past_score' })
   readonly pastScore;
 
+  @Exclude()
   @ViewColumn({ name: 'future_score' })
   readonly futureScore;
 
+  @Exclude()
   @ViewColumn({ name: 'dividend_score' })
   readonly dividendScore;
 
+  @Exclude()
   @ViewColumn({ name: 'value_score' })
   readonly valueScore;
 
+  @Exclude()
   @ViewColumn({ name: 'health_score' })
   readonly healthScore;
+
+  @Expose()
+  get scores() {
+    return {
+      past: this.pastScore,
+      future: this.futureScore,
+      dividend: this.dividendScore,
+      value: this.valueScore,
+      health: this.healthScore,
+    };
+  }
 }
