@@ -26,6 +26,7 @@ export class CompanyController {
     return this.queryBus.execute(new FindCompaniesQuery(
       {
         exchangeSymbols: query.exchangeSymbols,
+        scores: query.scores,
       },
     ));
   }

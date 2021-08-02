@@ -1,3 +1,5 @@
+import { Scores } from '../entity/types';
+
 enum AdditionalData {
   PRICES_TIMELINE = 'pricesTimeline'
 }
@@ -10,7 +12,7 @@ enum OverAllScoreFilterOperator {
 
 type Filter =  {
   readonly exchangeSymbols?: ReadonlyArray<string>,
-  readonly overallScore?: [OverAllScoreFilterOperator, number],
+  readonly scores?: Partial<Scores>;
 }
 
 export enum Sort {

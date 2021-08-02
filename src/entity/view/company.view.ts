@@ -1,5 +1,6 @@
 import { ViewColumn, ViewEntity } from 'typeorm';
 import { Exclude, Expose } from 'class-transformer';
+import { Scores } from '../types';
 
 @ViewEntity({
   expression: `
@@ -59,7 +60,7 @@ export class CompanyView {
   readonly healthScore;
 
   @Expose()
-  get scores() {
+  get scores(): Scores {
     return {
       past: this.pastScore,
       future: this.futureScore,

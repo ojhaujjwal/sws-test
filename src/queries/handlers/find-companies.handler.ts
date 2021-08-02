@@ -23,6 +23,18 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
       })
     }
 
+    if (query.filter?.scores) {
+      const scores = query.filter.scores;
+
+      select.andWhere(<CompanyView> {
+        ...(scores.value && { valueScore: scores.value }),
+        ...(scores.past && { pastScore: scores.past }),
+        ...(scores.future && { futureScore: scores.future }),
+        ...(scores.dividend && { dividendScore: scores.dividend }),
+        ...(scores.health && { healthScore: scores.health })
+      });
+    }
+
     return select.getMany();
   }
 }
