@@ -1,6 +1,7 @@
 import { Scores } from '../entity/types';
+import { IPaginationOptions } from 'nestjs-typeorm-paginate';
 
-enum AdditionalData {
+export enum AdditionalField {
   PRICES_TIMELINE = 'pricesTimeline'
 }
 
@@ -24,8 +25,9 @@ export type SortTarget = `${SortOperator}${SortField}`;
 
 export class FindCompaniesQuery {
     constructor(
+      readonly paginationOptions: IPaginationOptions,
       readonly filter?: Filter,
       readonly sort?: SortTarget,
-      readonly additionalData?: AdditionalData,
+      readonly additionalData?: ReadonlyArray<AdditionalField>,
     ) {}
 }

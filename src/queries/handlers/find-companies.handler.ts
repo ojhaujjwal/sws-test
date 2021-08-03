@@ -4,6 +4,7 @@ import { CompanyView } from '../../entity/view/company.view';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { Injectable } from '@nestjs/common';
+import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 
 @QueryHandler(FindCompaniesQuery)
 @Injectable()
@@ -14,7 +15,7 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
   ) {
   }
 
-  execute(query: FindCompaniesQuery): Promise<ReadonlyArray<CompanyView>> {
+  execute(query: FindCompaniesQuery): Promise<Pagination<CompanyView>> {
     const select = this.entityManager.createQueryBuilder(CompanyView, 'companyView');
 
     if (query.filter?.exchangeSymbols) {
@@ -37,7 +38,7 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
 
     this.addSortToSelect(select, query);
 
-    return select.getMany();
+    return paginate<CompanyView>(select, query.paginationOptions);
   }
 
 
