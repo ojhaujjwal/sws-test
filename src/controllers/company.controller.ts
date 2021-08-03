@@ -1,5 +1,5 @@
 import { QueryBus } from '@nestjs/cqrs';
-import { FindCompaniesQuery, Sort as CompanySort } from '../queries/find-companies.query';
+import { FindCompaniesQuery } from '../queries/find-companies.query';
 import { CompanyView } from '../entity/view/company.view';
 import {
   ClassSerializerInterceptor,
@@ -28,6 +28,7 @@ export class CompanyController {
         exchangeSymbols: query.exchangeSymbols,
         scores: query.scores,
       },
+      query.sort,
     ));
   }
 }

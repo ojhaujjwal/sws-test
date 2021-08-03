@@ -1,4 +1,5 @@
-import { IsArray, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsIn, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { SORT_FIELDS, SortTarget } from '../queries/find-companies.query';
 
 class Scores {
   @IsOptional()
@@ -28,5 +29,10 @@ export class QueryCompaniesRequest {
   readonly scores: Scores;
 
   @IsOptional()
-  readonly sort;
+  @IsString()
+  @IsIn([
+    ...SORT_FIELDS,
+    ...SORT_FIELDS.map((field) => `-${field}`)
+  ])
+  readonly sort: SortTarget;
 }

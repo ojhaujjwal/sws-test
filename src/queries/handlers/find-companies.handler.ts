@@ -2,7 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindCompaniesQuery } from '../find-companies.query';
 import { CompanyView } from '../../entity/view/company.view';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm';
+import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 
 @QueryHandler(FindCompaniesQuery)
@@ -35,6 +35,32 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
       });
     }
 
+    this.addSortToSelect(select, query);
+
     return select.getMany();
+  }
+
+
+  private addSortToSelect(select: SelectQueryBuilder<CompanyView>, query: FindCompaniesQuery) {
+    if (!query.sort) {
+      return;
+    }
+
+    if (query.sort === 'volatility') {
+      return this.sortByVolatility(select);
+    }
+
+    if (query.sort === '-volatility') {
+      return this.sortByVolatility(select, false);
+    }
+
+    const sortColumn = `companyView.${query.sort.replace(/-/g, '').split('.')[1]}Score`;
+
+    select.orderBy(sortColumn, query.sort.startsWith('-') ? 'DESC' : 'ASC');
+  }
+
+  private sortByVolatility(select: SelectQueryBuilder<CompanyView>, isAscendingOrder = true)
+  {
+    //TODO: sort by volatility
   }
 }
