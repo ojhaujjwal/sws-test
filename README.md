@@ -6,12 +6,25 @@ SWS API Test.
 
 ## Installation
 
+### Using Docker
+1. Copy .env.dist to .env and modify appropriate values
+
+```bash
+docker-compose build
+
+# Starts the app onn nwatch mode
+docker-compose up -d
+```
+
+### Without using Docker
 It's recommended to use nvm to setup the same node version. If not, any node on v14.* should work.
 
 ```bash
 $ nvm use
 
 $ npm install
+
+$ npm run start:dev
 ```
 
 ## Running the app
@@ -33,3 +46,7 @@ $ npm run start:prod
 # e2e tests
 $ npm run test:e2e
 ```
+
+## TODO:
+- [ ] Build Docker Image and Push to Container Registry
+- [ ] Deploy docker image to [cloud run](https://cloud.google.com/run)

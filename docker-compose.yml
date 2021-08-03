@@ -1,0 +1,20 @@
+version: "3.4"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: cicd/Dockerfile
+      target: dev
+      args:
+        - PUID
+        - IS_MAC_HOST
+    volumes:
+      - "./:/var/www:cached"
+    command: bash -c "make node_modules && npm run start:dev"
+
+    ports:
+      - ${API_PORT}:${API_PORT}
+
+    environment:
+      - PORT=${API_PORT}
