@@ -11,9 +11,8 @@ import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
   constructor(
     @InjectEntityManager()
-    private readonly entityManager: EntityManager
-  ) {
-  }
+    private readonly entityManager: EntityManager,
+  ) {}
 
   async execute(query: FindCompaniesQuery): Promise<Pagination<CompanyView>> {
     const select = this.entityManager.createQueryBuilder(CompanyView, 'cv');
@@ -21,18 +20,18 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
     if (query.filter?.exchangeSymbols) {
       select.where('cv.exchangeSymbol IN (:...exchangeSymbols)', {
         exchangeSymbols: query.filter.exchangeSymbols,
-      })
+      });
     }
 
     if (query.filter?.scores) {
       const scores = query.filter.scores;
 
-      select.andWhere(<CompanyView> {
+      select.andWhere(<CompanyView>{
         ...(scores.value && { valueScore: scores.value }),
         ...(scores.past && { pastScore: scores.past }),
         ...(scores.future && { futureScore: scores.future }),
         ...(scores.dividend && { dividendScore: scores.dividend }),
-        ...(scores.health && { healthScore: scores.health })
+        ...(scores.health && { healthScore: scores.health }),
       });
     }
 
@@ -41,7 +40,10 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
     return paginate<CompanyView>(select, query.paginationOptions);
   }
 
-  private addSortToSelect(select: SelectQueryBuilder<CompanyView>, query: FindCompaniesQuery): void {
+  private addSortToSelect(
+    select: SelectQueryBuilder<CompanyView>,
+    query: FindCompaniesQuery,
+  ): void {
     if (!query.sort) {
       return;
     }
@@ -56,13 +58,24 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
 
     const sortColumn = `cv.${query.sort.replace(/-/g, '').split('.')[1]}Score`;
 
-    select.orderBy(sortColumn, query.sort.startsWith('-') ? 'DESC' : 'ASC', 'NULLS LAST');
+    select.orderBy(
+      sortColumn,
+      query.sort.startsWith('-') ? 'DESC' : 'ASC',
+      'NULLS LAST',
+    );
   }
 
-  private sortByVolatility(select: SelectQueryBuilder<CompanyView>, isAscendingOrder = true): void {
-    select.leftJoin('swsCompanyPriceClose', 'cpc', 'cv.id = cpc.company_id', {})
+  private sortByVolatility(
+    select: SelectQueryBuilder<CompanyView>,
+    isAscendingOrder = true,
+  ): void {
+    select
+      .leftJoin('swsCompanyPriceClose', 'cpc', 'cv.id = cpc.company_id', {})
       .groupBy('cv.id')
-      .addSelect('(AVG(cpc.price*cpc.price) - AVG(cpc.price)*AVG(cpc.price))', 'variance')
+      .addSelect(
+        '(AVG(cpc.price*cpc.price) - AVG(cpc.price)*AVG(cpc.price))',
+        'variance',
+      )
       .orderBy('variance', isAscendingOrder ? 'ASC' : 'DESC', 'NULLS LAST');
   }
 }

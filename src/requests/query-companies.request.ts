@@ -1,4 +1,12 @@
-import { IsArray, IsIn, IsInt, IsOptional, IsString, Max, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  ValidateNested,
+} from 'class-validator';
 import { SORT_FIELDS, SortTarget } from '../queries/find-companies.query';
 import { Type } from 'class-transformer';
 
@@ -31,10 +39,7 @@ export class QueryCompaniesRequest {
 
   @IsOptional()
   @IsString()
-  @IsIn([
-    ...SORT_FIELDS,
-    ...SORT_FIELDS.map((field) => `-${field}`)
-  ])
+  @IsIn([...SORT_FIELDS, ...SORT_FIELDS.map((field) => `-${field}`)])
   readonly sort: SortTarget;
 
   @IsOptional()
