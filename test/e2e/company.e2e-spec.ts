@@ -139,9 +139,19 @@ describe('Company', () => {
       expect([...scores2].reverse()).toEqual(scores1);
     });
 
-    test.todo('should be able to sort in ascending order by volatility');
+    it('should be able to sort in ascending/descending order by volatility', async () => {
+      const volatilityOrder = ['Microsoft', 'Facebook', 'Apple', 'Tesla', 'Amazon.com'];
 
-    test.todo('should be able to sort in descending order by volatility');
+      const response1 = await sendGetReqToListEndpoint('exchangeSymbols[]=NasdaqGS&sort=volatility')
+        .expect(200);
+
+      expect(response1.body.items.map((item) => item.name)).toEqual(volatilityOrder);
+
+      const response2 = await sendGetReqToListEndpoint('exchangeSymbols[]=NasdaqGS&sort=-volatility')
+        .expect(200);
+
+      expect(response2.body.items.map((item) => item.name)).toEqual(volatilityOrder.reverse());
+    });
   });
 
 });

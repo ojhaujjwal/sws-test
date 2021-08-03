@@ -1,4 +1,4 @@
-import { ViewColumn, ViewEntity } from 'typeorm';
+import { PrimaryColumn, ViewColumn, ViewEntity } from 'typeorm';
 import { Exclude, Expose } from 'class-transformer';
 import { Scores } from '../types';
 
@@ -25,6 +25,7 @@ import { Scores } from '../types';
 })
 export class CompanyView {
   @ViewColumn()
+  @PrimaryColumn()
   readonly id: string;
 
   @ViewColumn()

@@ -1,4 +1,3 @@
-import { omit } from 'lodash';
 import { QueryBus } from '@nestjs/cqrs';
 import { FindCompaniesQuery } from '../queries/find-companies.query';
 import { CompanyView } from '../entity/view/company.view';
@@ -12,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { QueryCompaniesRequest } from '../requests/query-companies.request';
 import { paginationRoute } from './utils/paginationRoute';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller('/api/v1/companies')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -26,7 +26,7 @@ export class CompanyController {
     @Req() req,
     @Query(new ValidationPipe({ transform: true, transformOptions: { exposeDefaultValues: true } }))
       query: QueryCompaniesRequest,
-  ): Promise<ReadonlyArray<CompanyView>> {
+  ): Promise<Pagination<CompanyView>> {
     return this.queryBus.execute(new FindCompaniesQuery(
       {
         page: query.page,

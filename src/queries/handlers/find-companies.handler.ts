@@ -15,11 +15,11 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
   ) {
   }
 
-  execute(query: FindCompaniesQuery): Promise<Pagination<CompanyView>> {
-    const select = this.entityManager.createQueryBuilder(CompanyView, 'companyView');
+  async execute(query: FindCompaniesQuery): Promise<Pagination<CompanyView>> {
+    const select = this.entityManager.createQueryBuilder(CompanyView, 'cv');
 
     if (query.filter?.exchangeSymbols) {
-      select.where('companyView.exchangeSymbol IN (:...exchangeSymbols)', {
+      select.where('cv.exchangeSymbol IN (:...exchangeSymbols)', {
         exchangeSymbols: query.filter.exchangeSymbols,
       })
     }
@@ -41,8 +41,7 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
     return paginate<CompanyView>(select, query.paginationOptions);
   }
 
-
-  private addSortToSelect(select: SelectQueryBuilder<CompanyView>, query: FindCompaniesQuery) {
+  private addSortToSelect(select: SelectQueryBuilder<CompanyView>, query: FindCompaniesQuery): void {
     if (!query.sort) {
       return;
     }
@@ -55,13 +54,15 @@ export class FindCompaniesHandler implements IQueryHandler<FindCompaniesQuery> {
       return this.sortByVolatility(select, false);
     }
 
-    const sortColumn = `companyView.${query.sort.replace(/-/g, '').split('.')[1]}Score`;
+    const sortColumn = `cv.${query.sort.replace(/-/g, '').split('.')[1]}Score`;
 
-    select.orderBy(sortColumn, query.sort.startsWith('-') ? 'DESC' : 'ASC');
+    select.orderBy(sortColumn, query.sort.startsWith('-') ? 'DESC' : 'ASC', 'NULLS LAST');
   }
 
-  private sortByVolatility(select: SelectQueryBuilder<CompanyView>, isAscendingOrder = true)
-  {
-    //TODO: sort by volatility
+  private sortByVolatility(select: SelectQueryBuilder<CompanyView>, isAscendingOrder = true): void {
+    select.leftJoin('swsCompanyPriceClose', 'cpc', 'cv.id = cpc.company_id', {})
+      .groupBy('cv.id')
+      .addSelect('(AVG(cpc.price*cpc.price) - AVG(cpc.price)*AVG(cpc.price))', 'variance')
+      .orderBy('variance', isAscendingOrder ? 'ASC' : 'DESC', 'NULLS LAST');
   }
 }
