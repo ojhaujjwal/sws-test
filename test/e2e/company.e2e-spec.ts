@@ -9,9 +9,6 @@ describe('Company', () => {
   let app;
   let superTest: SuperTest<any>;
 
-  const createListEndpoint = (queryString?: string) => `${LIST_ENDPOINT}?${queryString}`;
-  const sendGetReqToListEndpoint = (queryString?: string) =>  superTest.get(createListEndpoint(queryString));
-
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -25,8 +22,11 @@ describe('Company', () => {
   });
 
   describe('GET /api/v1/companies', () => {
+    const createEndpoint = (queryString?: string) => `${LIST_ENDPOINT}?${queryString}`;
+    const sendGetReq = (queryString?: string) =>  superTest.get(createEndpoint(queryString));
+
     it('should return all the companies in first page', async () => {
-      const response = await sendGetReqToListEndpoint()
+      const response = await sendGetReq()
         .expect(200);
 
       expect(response.body.items).toHaveLength(10);
@@ -35,14 +35,14 @@ describe('Company', () => {
     });
 
     it('should be able to alter the page size with a query param', async () => {
-      const response1 = await sendGetReqToListEndpoint('perPage=5')
+      const response1 = await sendGetReq('perPage=5')
         .expect(200);
 
       expect(response1.body.items).toHaveLength(5);
       expect(response1.body.meta.totalItems).toEqual(12);
       expect(response1.body.meta.totalPages).toEqual(3);
 
-      const response2 = await sendGetReqToListEndpoint('perPage=15')
+      const response2 = await sendGetReq('perPage=15')
         .expect(200);
 
       expect(response2.body.items).toHaveLength(12);
@@ -52,7 +52,7 @@ describe('Company', () => {
 
 
     it('should be able to filter company by specified exchange symbols', async () => {
-      const response = await sendGetReqToListEndpoint('exchangeSymbols[]=NYSE&exchangeSymbols[]=ASX')
+      const response = await sendGetReq('exchangeSymbols[]=NYSE&exchangeSymbols[]=ASX')
         .expect(200);
 
       expect(response.body.items).toHaveLength(7);
@@ -62,7 +62,7 @@ describe('Company', () => {
     });
 
     it('should be able to filter by score', async () => {
-      const response = await sendGetReqToListEndpoint('scores[past]=2')
+      const response = await sendGetReq('scores[past]=2')
         .expect(200);
 
       expect(response.body.items).toHaveLength(4);
@@ -72,7 +72,7 @@ describe('Company', () => {
     });
 
     it('should be able to filter by combination of filters in query', async () => {
-      const response = await sendGetReqToListEndpoint('scores[past]=2&exchangeSymbols[]=NYSE&sort=-scores.value')
+      const response = await sendGetReq('scores[past]=2&exchangeSymbols[]=NYSE&sort=-scores.value')
         .expect(200);
 
       expect(response.body.items).toHaveLength(2);
@@ -116,22 +116,22 @@ describe('Company', () => {
       ]);
 
       expect(response.body.links).toEqual({
-        first: createListEndpoint('scores=&exchangeSymbols=NYSE&sort=-scores.value&limit=10'),
+        first: createEndpoint('scores=&exchangeSymbols=NYSE&sort=-scores.value&limit=10'),
         previous: '',
         next: '',
-        last: createListEndpoint('scores=&exchangeSymbols=NYSE&sort=-scores.value&page=1&limit=10')
+        last: createEndpoint('scores=&exchangeSymbols=NYSE&sort=-scores.value&page=1&limit=10')
       });
     });
 
     it('should be able to sort in ascending/descending order by specified score', async () => {
-      const response1 = await sendGetReqToListEndpoint('exchangeSymbols[]=ASX&sort=scores.value')
+      const response1 = await sendGetReq('exchangeSymbols[]=ASX&sort=scores.value')
         .expect(200);
 
       const scores1: ReadonlyArray<number> = response1.body.items.map((company) => company.scores.value);
 
       expect([...scores1].sort()).toEqual(scores1);
 
-      const response2 = await sendGetReqToListEndpoint('exchangeSymbols[]=ASX&sort=-scores.value')
+      const response2 = await sendGetReq('exchangeSymbols[]=ASX&sort=-scores.value')
         .expect(200);
 
       const scores2: ReadonlyArray<number> = response2.body.items.map((company) => company.scores.value);
@@ -142,17 +142,48 @@ describe('Company', () => {
     it('should be able to sort in ascending/descending order by volatility', async () => {
       const volatilityOrder = ['Microsoft', 'Facebook', 'Apple', 'Tesla', 'Amazon.com'];
 
-      const response1 = await sendGetReqToListEndpoint('exchangeSymbols[]=NasdaqGS&sort=volatility')
+      const response1 = await sendGetReq('exchangeSymbols[]=NasdaqGS&sort=volatility')
         .expect(200);
 
       expect(response1.body.items.map((item) => item.name)).toEqual(volatilityOrder);
 
-      const response2 = await sendGetReqToListEndpoint('exchangeSymbols[]=NasdaqGS&sort=-volatility')
+      const response2 = await sendGetReq('exchangeSymbols[]=NasdaqGS&sort=-volatility')
         .expect(200);
 
       expect(response2.body.items.map((item) => item.name)).toEqual(volatilityOrder.reverse());
     });
   });
 
+  describe('GET /api/v1/companies/:companyId/price-timeline', () => {
+    const sendGetReq = (companyId: string, queryString?: string) =>
+      superTest.get(`${LIST_ENDPOINT}/${companyId}/price-timeline?${queryString}`);
+
+    it('should return the prices', async () => {
+      const response = await sendGetReq('424EB65E-8C34-42BF-A107-61F93D4E9E6D')
+        .expect(200);
+
+      expect(response.body.items).toHaveLength(42);
+    });
+
+    it('should return the prices up to the specified date', () => {
+      return sendGetReq('424EB65E-8C34-42BF-A107-61F93D4E9E6D', 'upto=2020-05-20')
+        .expect(200, {
+          items: [
+            {
+              price: 183.51,
+              date: "2020-05-22"
+            },
+            {
+              price: 183.43,
+              date: "2020-05-21"
+            },
+            {
+              price: 185.66,
+              date: "2020-05-20"
+            }
+          ]
+        })
+    });
+  });
 });
 
